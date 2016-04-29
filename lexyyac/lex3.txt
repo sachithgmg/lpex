@@ -1,0 +1,61 @@
+COMMENT REMOVAL - LEX PROGRAM - COMPILER DESIGN
+
+Program: 
+
+%{
+   
+%}
+
+comment1    \/\*(.|\n)*\*\/
+comment2    \/\/.*
+
+%%
+
+{comment1}    ;
+{comment2}    ;
+.|\n        ECHO;
+
+%%
+main()
+{
+    yylex();
+    return 0;
+}
+
+Output:
+
+( input file: c1.c
+
+#include<stdio.h>
+main ()
+{
+    int i,n,fact=1;
+    printf("Enter the number: ");
+    scanf("%d",&n);            //inputing the number
+    for(i=1;i<=n;i++)        /* finding factorial */
+    {
+        fact = fact*i;
+    }
+    printf("Factorial=%d\n",fact);
+
+}
+)
+
+
+nn@linuxmint ~ $ lex l2.lex
+nn@linuxmint ~ $ gcc lex.yy.c -lfl
+nn@linuxmint ~ $ ./a.out <c1.c
+#include<stdio.h>
+main ()
+{
+    int i,n,fact=1;
+    printf("Enter the number: ");
+    scanf("%d",&n);            
+    for(i=1;i<=n;i++)        
+    {
+        fact = fact*i;
+    }
+    printf("Factorial=%d\n",fact);
+
+}
+nn@linuxmint ~ $

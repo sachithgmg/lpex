@@ -1,0 +1,58 @@
+REPLACE SEQUENCES OF WHITE SPACES BY A SINGLE BLANK CHARACTER - LEX PROGRAM - COMPILER DESIGN
+
+Elimination of Multiple Spaces ,Tabs & Emptylines
+
+Program:
+
+%{
+    
+%}
+
+space [ \t]
+emptyline \n
+%%
+
+{space}+ printf(" ");
+{emptyline}+ printf("\n");
+. ECHO;
+
+%%
+
+main()
+{
+
+    yylex();
+}
+Output:
+
+ // input: sum.c
+
+#include<stdio.h>
+main()
+{
+
+
+//program to add two numbers
+int a,      b,c;
+scanf("%d%d",&a,&b);
+c=a+b;/* finding sum &
+printing*/
+printf("sum=%d",c);
+}
+
+
+
+nn@linuxmint ~ $ lex mw.l
+nn@linuxmint ~ $ gcc lex.yy.c -ll
+nn@linuxmint ~ $ ./a.out<sum.c
+#include<stdio.h>
+main()
+{
+//program to add two numbers
+int a, b,c;
+scanf("%d%d",&a,&b);
+c=a+b;/* finding sum &
+printing*/
+printf("sum=%d",c);
+}
+nn@linuxmint ~ $

@@ -1,0 +1,770 @@
+PARSER FOR IF-THEN STATEMENTS - YACC - LEX - COMPILER DESIGN
+Program:
+
+(if.l)
+
+ALPHA [A-Za-z]
+DIGIT [0-9]
+%%
+[ \t\n]
+if                return IF;
+then                return THEN;
+{DIGIT}+            return NUM;
+{ALPHA}({ALPHA}|{DIGIT})*         return ID;
+"<="                return LE;
+">="                return GE;
+"=="                return EQ;
+"!="                return NE;
+"||"                return OR;
+"&&"                return AND;
+.                return yytext[0];
+%%           
+
+(if.y)
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+%token ID NUM IF THEN LE GE EQ NE OR AND 
+%right '='
+%left AND OR
+%left '<' '>' LE GE EQ NE
+%left '+''-'
+%left '*''/'
+%right UMINUS
+%left '!'
+%%
+S   : ST {printf("Input accepted.\n");exit(0);};
+ST  :    IF '(' E2 ')' THEN ST1';'
+    ;
+ST1 : ST
+    | E
+    ;       
+E   : ID'='E
+    | E'+'E
+    | E'-'E
+    | E'*'E
+    | E'/'E
+    | E'<'E
+    | E'>'E
+    | E LE E
+    | E GE E
+    | E EQ E
+    | E NE E
+    | E OR E
+    | E AND E
+    | ID
+    | NUM
+    ;
+E2  : E'<'E
+    | E'>'E
+    | E LE E
+    | E GE E
+    | E EQ E
+    | E NE E
+    | E OR E
+    | E AND E
+    | ID
+    | NUM
+    ;
+%%
+
+#include "lex.yy.c"
+
+main()
+{
+printf("Enter the statement: ");
+yyparse();
+}   
+Output:
+nn@linuxmint ~ $ lex if.l
+nn@linuxmint ~ $ yacc if.y
+nn@linuxmint ~ $ gcc y.tab.c -ll -ly
+nn@linuxmint ~ $ ./a.out
+Enter the statement: if(i>) then i=1;
+syntax error
+nn@linuxmint ~ $ ./a.out
+Enter the statement: if(i>8) then i=1;
+Input accepted.
+
+PARSER FOR IF-THEN-ELSE STATEMENTS - YACC PROGRAM - COMPILER DESIGN
+
+
+
+
+Program:
+
+(Lex Program: ift.l)
+alpha [A-Za-z]
+digit [0-9]
+%%
+[ \t\n]    
+if    return IF;
+then    return THEN;
+else    return ELSE;
+{digit}+    return NUM;
+{alpha}({alpha}|{digit})*    return ID;
+"<="    return LE;
+">="    return GE;
+"=="    return EQ;
+"!="    return NE;
+"||"    return OR;
+"&&"    return AND;
+.    return yytext[0];
+%%
+
+(Yacc Program: ift.y)
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+%token ID NUM IF THEN LE GE EQ NE OR AND ELSE
+%right '='
+%left AND OR
+%left '<' '>' LE GE EQ NE
+%left '+''-'
+%left '*''/'
+%right UMINUS
+%left '!'
+%%
+
+S      : ST {printf("Input accepted.\n");exit(0);};
+ST    : IF '(' E2 ')' THEN ST1';' ELSE ST1';'
+        | IF '(' E2 ')' THEN ST1';'
+        ;
+ST1  : ST
+        | E
+        ;
+E    : ID'='E
+      | E'+'E
+      | E'-'E
+      | E'*'E
+      | E'/'E
+      | E'<'E
+      | E'>'E
+      | E LE E
+      | E GE E
+      | E EQ E
+      | E NE E
+      | E OR E
+      | E AND E
+      | ID
+      | NUM
+      ;
+E2  : E'<'E
+      | E'>'E
+      | E LE E
+      | E GE E
+      | E EQ E
+      | E NE E
+      | E OR E
+      | E AND E
+      | ID
+      | NUM
+      ;
+
+%%
+
+#include "lex.yy.c"
+
+main()
+{
+  printf("Enter the exp: ");
+  yyparse();
+}
+        
+Output:
+
+students@cselab-desktop:~$ lex ift.lex
+students@cselab-desktop:~$ yacc ift.y
+students@cselab-desktop:~$ gcc y.tab.c -ll -ly
+students@cselab-desktop:~$ ./a.out
+Enter the exp: if(a==1)  then b=1; else b=2;
+Input accepted.
+PARSER FOR FOR LOOP STATEMENTS - YACC PROGRAM - COMPILER DESIGN
+Program:
+
+// Lex file: for.l
+
+alpha [A-Za-z]
+digit [0-9]
+
+%%
+
+[\t \n] 
+for             return FOR;
+{digit}+    return NUM;
+{alpha}({alpha}|{digit})* return ID;
+"<="         return LE;
+">="         return GE;
+"=="         return EQ;
+"!="          return NE;
+"||"            return OR;
+"&&"         return AND;
+.                return yytext[0];
+
+%%
+
+
+// Yacc file: for.y
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+%token ID NUM FOR LE GE EQ NE OR AND
+%right "="
+%left OR AND
+%left '>' '<' LE GE EQ NE
+%left '+' '-'
+%left '*' '/'
+%right UMINUS
+%left '!'
+
+%%
+    
+S         : ST {printf("Input accepted\n"); exit(0);}
+ST       : FOR '(' E ';' E2 ';' E ')' DEF
+           ;
+DEF    : '{' BODY '}'
+           | E';' 
+           | ST
+           |
+           ;
+BODY  : BODY BODY
+           | E ';'        
+           | ST
+           |             
+           ;
+        
+E        : ID '=' E 
+          | E '+' E 
+          | E '-' E
+          | E '*' E
+          | E '/' E
+          | E '<' E
+          | E '>' E
+          | E LE E
+          | E GE E
+          | E EQ E
+          | E NE E
+          | E OR E
+          | E AND E
+          | E '+' '+' 
+          | E '-' '-'
+          | ID  
+          | NUM
+          ;
+
+    
+E2     : E'<'E
+         | E'>'E
+         | E LE E
+         | E GE E
+         | E EQ E
+         | E NE E
+         | E OR E
+         | E AND E
+         ;    
+%%
+
+#include "lex.yy.c"
+main() {
+    printf("Enter the expression:\n");
+    yyparse();
+}      
+      
+
+
+Output:
+nn@linuxmint ~ $ lex for.l
+nn@linuxmint ~ $ yacc for.y
+conflicts: 25 shift/reduce, 4 reduce/reduce
+nn@linuxmint ~ $ gcc y.tab.c -ll -ly
+nn@linuxmint ~ $ ./a.out
+Enter the expression:
+for(i=0;i<n;i++)
+i=i+1;
+Input accepted
+PARSER FOR WHILE STATEMENTS - YACC PROGRAM - COMPILER DESIGN
+
+
+Program: 
+
+(wh.l)
+
+alpha [A-Za-z]
+digit [0-9]
+%%
+[ \t\n]   
+while    return WHILE;
+{digit}+    return NUM;
+{alpha}({alpha}|{digit})*    return ID;
+"<="    return LE;
+">="    return GE;
+"=="    return EQ;
+"!="    return NE;
+"||"    return OR;
+"&&"    return AND;
+.    return yytext[0];
+%%
+
+(wh.y)
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+%token ID NUM WHILE LE GE EQ NE OR AND
+%right '='
+%left AND OR
+%left '<' '>' LE GE EQ NE
+%left '+''-'
+%left '*''/'
+%right UMINUS
+%left '!'
+%%
+S        : ST1 {printf("Input accepted.\n");exit(0);};
+ST1    :    WHILE'(' E2 ')' '{' ST '}'
+ST      :     ST ST
+          | E';'
+          ;
+E       : ID'='E
+          | E'+'E
+          | E'-'E
+          | E'*'E
+          | E'/'E
+          | E'<'E
+          | E'>'E
+          | E LE E
+          | E GE E
+          | E EQ E
+          | E NE E
+          | E OR E
+          | E AND E
+          | ID
+          | NUM
+          ;
+E2     : E'<'E
+          | E'>'E
+          | E LE E
+          | E GE E
+          | E EQ E
+          | E NE E
+          | E OR E
+          | E AND E
+          | ID
+          | NUM
+          ;
+
+%%
+
+#include "lex.yy.c"
+
+main()
+{
+   printf("Enter the exp: ");
+   yyparse();
+}
+
+
+Output:
+
+students@ccflab-desktop:~$ lex wh.l
+students@ccflab-desktop:~$ yacc wh.y
+conflicts: 2 shift/reduce
+students@ccflab-desktop:~$ gcc y.tab.c -ll -ly
+students@ccflab-desktop:~$ ./a.out
+Enter the exp: while(a>1){ b=1;}
+Input accepted.
+PARSER FOR DO WHILE STATEMENTS - YACC PROGRAM - COMPILER DESIGN
+
+
+
+
+Program:
+
+(dowh.l) 
+alpha [A-Za-z]
+digit [0-9]
+%%
+[ \t\n]   
+do    return DO;
+while    return WHILE;
+{digit}+    return NUM;
+{alpha}({alpha}|{digit})*    return ID;
+"<="    return LE;
+">="    return GE;
+"=="    return EQ;
+"!="    return NE;
+"||"    return OR;
+"&&"    return AND;
+.    return yytext[0];
+%%
+
+(dowh.y)
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+%token ID NUM DO WHILE LE GE EQ NE OR AND
+%right '='
+%left AND OR
+%left '<' '>' LE GE EQ NE
+%left '+''-'
+%left '*''/'
+%right UMINUS
+%left '!'
+
+%%
+
+S : ST1 {printf("Input accepted.\n");exit(0);};
+ST1    :    DO '{' ST '}' WHILE'(' E2 ')'';';
+ST      :     ST ST
+          | E';'
+          ;
+E       : ID'='E
+         | E'+'E
+         | E'-'E
+         | E'*'E
+         | E'/'E
+         | E'<'E
+         | E'>'E
+         | E LE E
+         | E GE E
+         | E EQ E
+         | E NE E
+         | E OR E
+         | E AND E
+         | ID
+         | NUM
+         ;
+E2     : E'<'E
+         | E'>'E
+         | E LE E
+         | E GE E
+         | E EQ E
+         | E NE E
+         | E OR E
+         | E AND E
+         | ID
+         | NUM
+         ;
+
+%%
+
+#include "lex.yy.c"
+
+main()
+{
+   printf("Enter the exp: ");
+   yyparse();
+}
+
+Output:
+
+students@ccflab-desktop:~$ lex dowh.l
+students@ccflab-desktop:~$ yacc dowh.y
+conflicts: 2 shift/reduce
+students@ccflab-desktop:~$ gcc y.tab.c -ll -ly
+students@ccflab-desktop:~$ ./a.out
+Enter the exp: do{a=b+1;}while(a<10);
+Input accepted.
+PARSER FOR SWITCH STATEMENTS - YACC PROGRAM - COMPILER DESIGN
+
+
+Program:
+(sw.l)
+alpha [A-Za-z]
+digit [0-9]
+%%
+[ \t\n]   
+switch    return SWITCH;
+case return CASE;
+break return BREAK;
+default return DEFAULT;
+{digit}+    return NUM;
+{alpha}({alpha}|{digit})*    return ID;
+"<="    return LE;
+">="    return GE;
+"=="    return EQ;
+"!="    return NE;
+"||"    return OR;
+"&&"    return AND;
+.    return yytext[0];
+%%
+
+(sw.y)
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+%token ID NUM SWITCH CASE DEFAULT BREAK LE GE EQ NE OR AND ELSE
+%right '='
+%left AND OR
+%left '<' '>' LE GE EQ NE
+%left '+''-'
+%left '*''/'
+%right UMINUS
+%left '!'
+%%
+
+S       : ST {printf("Input accepted.\n");exit(0);}
+         ;
+ST     :    SWITCH '(' ID ')' '{' B '}'
+         ;
+    
+B       :    C
+         |    C    D
+        ;
+    
+C      :    C    C
+        |    CASE NUM ':' E ';'
+        | BREAK ';'
+        ;
+
+D      :    DEFAULT    ':' E ';' BREAK ';'
+        ;
+     
+E    : ID'='E
+    | E'+'E
+    | E'-'E
+    | E'*'E
+    | E'/'E
+    | E'<'E
+    | E'>'E
+    | E LE E
+    | E GE E
+    | E EQ E
+    | E NE E
+    | E OR E
+    | E AND E
+    | ID
+    | NUM
+    ;
+
+%%
+
+#include "lex.yy.c"
+
+main()
+{
+printf("Enter the exp: ");
+yyparse();
+}
+
+Output:
+students@cselab-desktop:~$ lex sw.l
+students@cselab-desktop:~$ yacc sw.y
+conflicts: 2 shift/reduce
+students@cselab-desktop:~$ gcc y.tab.c -ll -ly
+students@cselab-desktop:~$ ./a.out
+Enter the exp: switch(a)
+{
+case 1: a=1;
+    break;
+case 2: a=2;
+    break;
+default:a=0;
+break;
+}
+Input accepted.
+PARSER FOR FUNCTION DEFINITION - YACC PROGRAM - COMPILER LAB
+
+
+Program :
+
+(Lex Program : fundf.l)
+
+alpha [A-Za-z]
+digit [0-9]
+
+%%
+
+[\t \n]             ;
+int|float|void|char         return TYPE;
+return                 return RETURN;
+{digit}+             return NUM;
+{alpha}({alpha}|{digit})*     return ID;
+.                 return yytext[0];
+
+%%
+
+
+(Yacc Program : fundf.y)
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+%token TYPE RETURN ID NUM
+%right "="
+%left '+' '-'
+%left '*' '/'
+%right UMINUS
+%left '!'
+
+%%
+
+S    : FUN {printf("Input accepted\n"); exit(0);}
+FUN    : TYPE ID '(' PARAM ')' '{' BODY '}'      
+      ;
+PARAM    : PARAM ',' TYPE ID
+    | TYPE ID
+    |
+    ;          
+BODY    : BODY BODY
+    | PARAM ';'
+    | E ';'         
+        | RETURN E ';'
+        | 
+    ;               
+E    : ID '=' E
+    | E '+' E
+    | E '-' E
+    | E '*' E
+    | E '/' E        
+    | ID
+    | NUM    
+    ;
+
+%%
+
+#include "lex.yy.c"
+main()
+{
+    printf("Enter the expression:\n");
+    yyparse();
+ }
+  
+      
+
+Output :
+nn@linuxmint ~ $ lex fund.l
+nn@linuxmint ~ $ yacc fund.y
+conflicts: 17 shift/reduce, 11 reduce/reduce
+nn@linuxmint ~ $ gcc y.tab.c -ll -ly
+nn@linuxmint ~ $ ./a.out
+Enter the expression:
+float sum(int term)
+{
+    float result;
+    result=result+term;
+    return result;
+}
+Input accepted
+nn@linuxmint ~ $ 
+PARSER FOR SQL QUERY SELECT - YACC PROGRAM - COMPILER DESIGN
+Program:
+
+// Lex Program :sq.l
+
+
+alpha [A-Za-z]
+digit [0-9]
+%%
+
+
+[ \t\n]
+select            return SELECT;
+distinct         return DISTINCT;
+from             return FROM;
+where           return WHERE;
+like               return LIKE;
+desc              return DESC;
+asc                return ASC;
+"group by"    return GROUP;
+having          return HAVING;
+"order by"    return ORDER;
+or                 return OR;
+and               return AND;
+{digit}+       return NUM;
+{alpha}({alpha}|{digit})* return ID;
+"<="             return LE;
+">="             return GE;
+"=="             return EQ;
+"!="              return NE;
+.                   return yytext[0];
+
+%%
+
+
+// Yacc Program: sq.y
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+%token ID NUM SELECT DISTINCT FROM WHERE LE GE EQ NE OR AND LIKE GROUP HAVING ORDER ASC DESC
+%right '='
+%left AND OR
+%left '<' '>' LE GE EQ NE
+
+%%
+
+    S         : ST1';' {printf("INPUT ACCEPTED.... \n\t\t...www.2k8cse.cu.cc\n");exit(0);};
+    ST1     : SELECT attributeList FROM tableList ST2
+               | SELECT DISTINCT attributeList FROM tableList ST2
+               ;
+    ST2     : WHERE COND ST3
+               | ST3
+               ;
+    ST3     : GROUP attributeList ST4
+               | ST4
+               ;
+    ST4     : HAVING COND ST5
+               | ST5
+               ;
+    ST5     : ORDER attributeList ST6
+               |
+               ;
+    ST6     : DESC
+               | ASC
+               |
+               ;
+  attributeList :     ID','attributeList
+               | '*'
+               | ID
+               ;
+ tableList    : ID',' tableList
+               | ID
+               ;
+    COND    : COND OR COND
+               | COND AND COND
+               | E
+               ;
+    E         : F '=' F
+               | F '<' F 
+               | F '>' F  
+               | F LE F 
+               | F GE F
+               | F EQ F
+               | F NE F
+               | F OR F 
+               | F AND F 
+               | F LIKE F 
+               ;
+    F         : ID 
+               | NUM  
+               ;
+%%
+#include"lex.yy.c"
+#include<ctype.h>
+main()
+{
+    printf("Enter the query:");
+    yyparse();
+}          
+
+
+Output:
+nn@linuxmint ~ $ lex sq.l
+nn@linuxmint ~ $ yacc sq.y
+nn@linuxmint ~ $ gcc y.tab.c -ll -ly
+nn@linuxmint ~ $ ./a.out
+Enter the query:select name,address from emp where age>20 group by name having age<40 order by name desc;
+INPUT ACCEPTED...
+                                   ...www.2k8cse.cu.cc
+

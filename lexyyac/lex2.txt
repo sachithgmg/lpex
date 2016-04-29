@@ -1,0 +1,51 @@
+NUMBER EACH LINE - LEX PROGRAM - COMPILER DESIGN
+
+Program: 
+
+%{
+int lineno =1;
+%}
+
+line .*\n
+
+%%
+{line} {printf("%5d %s", lineno++,yytext);}
+
+%%
+main()
+{
+yylex();
+return 0;
+}
+
+
+Output: 
+input: compilerdesign.txt
+
+Design of a Lexical Analyzer using Finite Automation
+Design of lexical analyzer using LEX
+Design of recursive descent and LL (1) parsers
+Implementation of Operator precedence Parsing
+Design of parser for arithmetic expressions using YACC
+Design of a simple type checker
+Generation of IC for arithmetic expressions
+Simple code optimization strategies
+Design of a code generator 
+Writing a simple Compiler 
+                    www.2k8618.blogspot.com
+                   
+                   
+nn@linuxmint ~ $ lex l1.l
+nn@linuxmint ~ $ gcc lex.yy.c -lfl
+nn@linuxmint ~ $ ./a.out <compilerdesign.txt
+    1 Design of a Lexical Analyzer using Finite Automation
+    2 Design of lexical analyzer using LEX
+    3 Design of recursive descent and LL (1) parsers
+    4 Implementation of Operator precedence Parsing
+    5 Design of parser for arithmetic expressions using YACC
+    6 Design of a simple type checker
+    7 Generation of IC for arithmetic expressions
+    8 Simple code optimization strategies
+    9 Design of a code generator 
+   10 Writing a simple Compiler 
+   11                     www.2k8618.blogspot.com

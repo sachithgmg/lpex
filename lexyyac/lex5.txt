@@ -1,0 +1,47 @@
+COUNT THE NUMBER OF OCCURRENCES OF A PARTICULAR WORD OR LETTER - LEX PROGRAM - COMPILER DESIGN
+
+Program:
+
+%{
+    int icount=0,factcount=0;
+%}
+
+%%
+
+fact    factcount++;
+i         icount++;
+(.|\n)    ;
+
+%%
+main()
+{
+    yylex();
+    printf("Count of \"fact\"= %d \nCount of letter 'i' = %d\n",factcount,icount);   
+    return 0;
+}
+
+Output:
+
+
+nn@linuxmint ~ $ lex l4.l
+nn@linuxmint ~ $ gcc lex.yy.c -ll
+nn@linuxmint ~ $ ./a.out<c1.c
+Count of "fact"= 5 
+Count of letter 'i' = 17
+nn@linuxmint ~ $ 
+
+
+// Input file: c1.c
+#include<stdio.h> 
+main () 
+{ 
+    int i,n,fact=1; 
+    printf("Enter the number: "); 
+    scanf("%d",&n);            //inputing the number 
+    for(i=1;i<=n;i++)        /* finding factorial */ 
+    { 
+        fact = fact*i; 
+    } 
+    printf("Factorial=%d\n",fact); 
+
+}

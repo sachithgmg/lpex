@@ -1,0 +1,586 @@
+EXPRESSION EVALUATION YACC S6
+%{
+#include<stdio.h>
+%}
+%token DIGIT
+%%
+S    : E '\n' {printf("%d\n",$1);return 1;}
+    ;
+E    : E '+'    T    { $$ = $1 + $3 ; }
+    | T
+    ;
+T    : T '*'    F    { $$ = $1 * $3; }
+    | F
+    ;
+F    : '(' E    ')'    { $$=$2; }
+    | DIGIT
+    ;
+%%
+yylex(){
+int c;
+c=getchar();
+if(isdigit(c))
+{
+    yylval=c-'0';
+    return DIGIT;
+}
+
+return c;
+}
+main()
+{
+printf("Enter the exp:");
+yyparse();    
+return 0;
+}
+
+Output:
+students@ccflab-desktop:~$ yacc aa.y
+students@ccflab-desktop:~$ gcc y.tab.c -ly
+students@ccflab-desktop:~$ ./a.out
+Enter the exp:2+5*5
+
+EXPRESSION EVALUATION - YACC PROGRAM - COMPILER DESIGN
+Program:
+
+// Yacc Program: expr.y
+
+%{
+#include"stdio.h"
+%}
+%token DIGIT
+%%
+S       : E '\n' {printf("%d\n",$1);return 1;}
+        ;
+E       : E '+' T { $$ = $1 + $3 ;}
+        | T
+        ;
+T       :T '-' FF { $$ = $1 - $3 ;}
+        | FF
+        ;
+FF      :FF '/' FFF { $$ = $1 / $3 ;}
+        |FFF;
+FFF     :FFF '*' F { $$ =$1*$3 ;}
+        |F
+        ;
+F       : '(' E ')' { $$ = $2 ;}
+        |DIGIT
+        ;
+%%
+yylex()
+{
+int c;
+c=getchar();
+if(isdigit(c))
+{
+        yylval=c-'0';
+        return DIGIT;
+}
+return c;
+}
+
+main()
+{
+printf("Enter the exp:");
+yyparse();
+}
+
+Output:
+nn@linuxmint ~ $ lex io.l
+nn@linuxmint ~ $ yacc expr.y
+nn@linuxmint ~ $ gcc y.tab.c -ll -ly
+nn@linuxmint ~ $ ./a.out
+Enter the exp:5*(5+1)-9/2
+26
+
+
+
+DESK CALCULATOR WITH ERROR RECOVERY - YACC PROGRAM - COMPILER DESIGN
+Program:
+
+// Lex file: desk.l
+
+DIGIT [0-9]+\.?|[0-9]*\.[0-9]+
+
+%%
+
+[ ]
+{DIGIT}    {yylval=atof(yytext);return NUM;}
+\n|.             {return yytext[0];}
+
+// Yacc file: desk.y 
+
+%{
+    #include<ctype.h>
+    #include<stdio.h>
+    #define YYSTYPE double
+%}
+
+%token NUM
+
+%left '+' '-'
+%left '*' '/'
+%right UMINUS
+
+%%
+
+S         : S E '\n' { printf("Answer: %g \nEnter:\n", $2); }
+           | S '\n'
+           |
+           | error '\n' { yyerror("Error: Enter once more...\n" );yyerrok; }
+           ;
+E         : E '+' E    { $$ = $1 + $3; }
+           | E'-'E    { $$=$1-$3; }
+           | E'*'E    { $$=$1*$3; }
+           | E'/'E    { $$=$1/$3; }
+           | '('E')'    { $$=$2; }
+           | '-'E %prec UMINUS { $$= -$2; }
+           | NUM        
+           ;
+
+%%
+
+#include "lex.yy.c"
+
+int main()
+{
+    printf("Enter the expression: ");
+    yyparse();
+}
+
+
+
+POSTFIX EVALUAION YACC LEX S6
+YACC Program:(p1.y)
+
+%{
+#include<stdio.h>
+#include<assert.h>
+ int Pop();
+ int Top();
+ void Push(int val);
+%}
+
+%token T_Int
+
+%%
+S : S E    {printf(" %d\n", Top());}
+  |
+  ;
+
+E : E E '+' {Push(Pop()+Pop());}
+  | E E '-' {int op2=Pop();Push(Pop()-op2);} 
+  | E E '*' {Push(Pop() * Pop());}
+  | E E '/' {int op2=Pop();Push(Pop()/op2);}
+  | T_Int   {Push(yylval);}
+  ;
+%%
+#include "lex.yy.c"
+ int stack[100],count=0;
+
+ int Pop()
+ {
+  assert(count>0);
+  return stack[--count];
+ }
+
+ int Top()
+ {
+  assert(count>0);
+  return stack[count-1];
+ }
+
+ void Push(int val)
+ {
+  assert(count<sizeof(stack)/sizeof(int));
+  stack[count++]=val;
+ }
+
+int main()
+ {
+  return yyparse();
+ }
+
+Lex progam:(p1.l)
+
+DIGIT    [0-9]
+%%
+{DIGIT}+ {yylval=atoi(yytext);return T_Int;}
+[-+*/] {return yytext[0];}
+\n    yyterminate();
+.    ;
+
+Output:
+
+students@ccflab-desktop:~$ lex p1.l
+students@ccflab-desktop:~$ yacc p1.y
+conflicts: 1 shift/reduce
+students@ccflab-desktop:~$ gcc y.tab.c -ll -ly
+students@ccflab-desktop:~$ ./a.out
+2 3 +
+5
+students@ccflab-desktop:~$ ./a.out
+2 3 *
+6
+students@ccflab-desktop:~$ ./a.out
+3 2 -
+1
+students@ccflab-desktop:~$ ./a.out
+6 3 /
+2
+
+
+POSTFIX EXPRESSION EVALUATION - COMPILER DESIGN - YACC PROGRAM
+Program:
+
+// Lex file: pos.l
+
+DIGIT [0-9]
+%%
+{DIGIT}+    {yylval=atoi(yytext);return ID;}
+[-+*/]        {return yytext[0];}
+. ;
+\n         yyterminate();
+
+// Yacc File: pos.y
+
+%{
+    #include<stdio.h>
+    #include<assert.h>
+    void push(int val);
+%}
+
+%token ID
+
+%%
+
+S     : E  {printf("= %d\n",top());}
+      ;
+E     : E E '+' {push(pop()+pop());}
+     | E E '-' {int temp=pop();push(pop()-temp);}
+     | E E '*' {push(pop()*pop());}
+     | E E '/' {int temp=pop();push(pop()/temp);}
+     | ID    {push(yylval);}
+     ;
+
+%%
+#include"lex.yy.c"
+
+int st[100];
+int i=0;
+
+void push(int val)
+{
+    assert(i<100);
+    st[i++]=val;
+    
+}
+
+int pop()
+{
+    assert(i>0);
+    return st[--i];
+
+}
+
+int top()
+{
+    assert(i>0);
+    return st[i-1];
+}
+int main()
+{
+    yyparse();
+    return 0;
+}
+
+Output:
+
+nn@linuxmint ~ $ lex pos.l
+nn@linuxmint ~ $ yacc pos.y
+nn@linuxmint ~ $ gcc y.tab.c -ll -ly
+nn@linuxmint ~ $ ./a.out
+5 5 -
+= 0
+
+
+PARSER FOR INFIX EXPRESSION TO POSTFIX EXPRESSION - YACC PROGRAM - COMPILER LAB
+Program:
+
+(Lex program: ip.l)
+
+ALPHA [A-Z a-z]
+DIGIT [0-9]
+%%
+{ALPHA}({ALPHA}|{DIGIT})*    return ID;
+{DIGIT}+                                      {yylval=atoi(yytext); return ID;}
+[\n \t]                                              yyterminate();
+.                                                      return yytext[0];
+%%
+
+(Yacc program: ip.y)
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+%token    ID
+%left    '+' '-'
+%left    '*' '/'
+%left    UMINUS
+
+%%
+
+S    :    E
+E    :    E'+'{A1();}T{A2();}
+      |    E'-'{A1();}T{A2();}
+      |    T
+      ;
+T    :    T'*'{A1();}F{A2();}
+      |    T'/'{A1();}F{A2();}
+      |    F
+      ;
+F    :    '('E{A2();}')'
+      |    '-'{A1();}F{A2();}
+      |    ID{A3();}
+      ;
+
+%%
+
+#include "lex.yy.c"
+char st[100];
+int top=0;
+
+main()
+{
+    printf("Enter infix expression:  ");
+    yyparse();
+    printf("\n");
+}
+
+A1() 
+{
+    st[top++]=yytext[0];
+}
+
+A2()
+{
+    printf("%c",st[--top]);
+}
+
+A3()
+{
+    printf("%c",yytext[0]);
+}
+
+Output:
+nn@linuxmint ~ $ lex ip.l
+nn@linuxmint ~ $ yacc ip.y
+nn@linuxmint ~ $ gcc y.tab.c -ll -ly
+nn@linuxmint ~ $ ./a.out
+Enter infix expression:  (3+5)*(6-2)
+35+62-*
+
+
+POSTFIX TO INFIX - YACC PROGRAM - COMPILER DESIGN
+
+Program:-"Beta version"-(Partial Output Only)
+
+// Lex file: ptoi.l
+
+DIGIT [0-9]
+%%
+{DIGIT}+    {yylval=atoi(yytext);return ID;}
+[-+*/]            {return yytext[0];}
+.                      ;
+\n         yyterminate();
+
+// Yacc file: ptoi.y
+%{
+    #include<stdio.h>
+    #include<string.h>
+    void push();
+    char* top();
+    void a1(char* a);
+%}
+
+%token ID
+
+%%
+
+S    : E  { printf("= %s \n",top());}
+    ;
+E    : E E '+' {a1(" + ");}
+    | E E '*' {a1(" * ");}
+    | E E '-' {a1(" - ");}
+    | E E '/' {a1(" / ");}
+    | ID    {push();}
+    ;
+
+%%
+#include"lex.yy.c"
+
+char st[100][10];
+int indx=0;
+
+void push()
+{
+   strcpy(st[indx++],yytext);
+}
+
+char* pop()
+{
+    return st[--indx];
+}
+
+char* top()
+{
+    return st[indx-1];
+}
+void a1(char* a)
+{
+    char buffer[20];
+    char* c1=pop();
+    char* c2=pop();
+    bzero(buffer,20);
+    strcat(buffer,c2);
+    strcat(buffer,a);
+    strcat(buffer,c1);
+    strcpy(st[indx++],buffer);
+}
+main()
+{
+    yyparse();
+
+}
+
+Output:
+nn@linuxmint ~ $ lex ptoi.l
+nn@linuxmint ~ $ yacc ptoi2.y
+nn@linuxmint ~ $ gcc y.tab.c -ll -ly
+nn@linuxmint ~ $ ./a.out
+2 5 * 3 2 * +
+= 2 * 5 + 3 * 2 
+nn@linuxmint ~ $ ./a.out
+2 5 +
+= 2 + 5 
+nn@linuxmint ~ $ ./a.out
+2 3 *
+= 2 * 3 
+nn@linuxmint ~ $ ./a.out
+2 3 -
+= 2 - 3 
+nn@linuxmint ~ $ ./a.out
+2 5 /
+= 2 / 5 
+
+
+PARSER FOR SQL NESTED QUERIES - COMPILER DESIGN - YACC PROGRAM
+Program:
+
+// Lex file: sq.l
+alpha [A-Za-z]
+digit [0-9]
+%%
+
+[ \t\n]
+select        return SELECT;
+distinct     return DISTINCT;
+from         return FROM;
+where       return WHERE;
+like           return LIKE;
+desc         return DESC;
+asc           return ASC;
+"group by"    return GROUP;
+having           return HAVING;
+"order by"     return ORDER;
+or                  return OR;
+and                return AND;
+in                   return IN;
+{digit}+        return NUM;
+{alpha}({alpha}|{digit})* return ID;
+"<="              return LE;
+">="              return GE;
+"=="              return EQ;
+"!="               return NE;
+.                     return yytext[0];
+%%
+
+// Yacc file: sq.y
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+%}
+%token ID NUM SELECT DISTINCT FROM WHERE LE GE EQ NE OR AND LIKE GROUP HAVING ORDER ASC DESC IN
+%right '='
+%left AND OR
+%left '<' '>' LE GE EQ NE
+
+%%
+
+    S    : ST1';' {printf("INPUT ACCEPTED...\n");exit(0);};
+    ST1    : SELECT attributeList FROM tableList ST2
+        | SELECT DISTINCT attributeList FROM tableList ST2
+        ;
+    ST2    : WHERE COND ST3
+        | ST3
+        ;
+    ST3    : GROUP attributeList ST4
+        | ST4
+        ;
+    ST4    : HAVING COND ST5
+        | ST5
+        ;
+    ST5    : ORDER attributeList ST6
+        |
+        ;
+    ST6    : DESC
+        | ASC
+        |
+        ;
+  attributeList :     ID','attributeList
+        | '*'
+        | ID
+        ;
+ tableList    : ID',' tableList
+        | ID
+        ;
+    COND    : COND OR COND
+        | COND AND COND
+        | E
+        | ID IN '(' ST1 ')'
+        ;
+    E    : F'=' F
+        | F '<' F 
+        | F '>' F  
+        | F LE F 
+        | F GE F
+        | F EQ F
+        | F NE F
+        | F OR F 
+        | F AND F 
+        | F LIKE F 
+        ;
+    F    : ID 
+        | NUM  
+        ;
+%%
+#include"lex.yy.c"
+#include<ctype.h>
+main()
+{
+    printf("Enter the query:");
+    yyparse();
+}        
+Output:
+
+nn@linuxmint ~ $ lex sq.l
+nn@linuxmint ~ $ yacc sq.y
+nn@linuxmint ~ $ gcc y.tab.c -ll -ly
+nn@linuxmint ~ $ ./a.out
+Enter the query:select model from product where manufacture in ( select manuid from manufactures where manufacture = keltron);
+INPUT ACCEPTED...
+
+
+

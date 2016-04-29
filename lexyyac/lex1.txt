@@ -1,0 +1,39 @@
+IMPLEMENT FINITE AUTOMATA IN LEX
+
+%{ 
+
+%} 
+
+reg (b|ab*a)*ab*  
+
+%% 
+
+{reg}      printf("%s Accepted",yytext); 
+.*     printf("%s Not Accepted",yytext); 
+
+
+%% 
+
+main() 
+{ 
+yylex(); 
+return 0; 
+} 
+
+Input:x.c 
+a 
+ab 
+aab 
+aba 
+abba 
+
+Output: 
+students@ccflab-desktop:~$ lex b.l 
+students@ccflab-desktop:~$ gcc lex.yy.c -lfl 
+students@ccflab-desktop:~$ ./a.out<x.c 
+a Accepted 
+ab Accepted 
+aab Not Accepted 
+aba Not Accepted 
+abba Not Accepted 
+students@ccflab-desktop:~$ 
